@@ -13,6 +13,12 @@ import BouncyCheckbox from 'react-native-bouncy-checkbox';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import styles from '../Styles/Styles';
 import {appColors} from '../utils/AppColors';
+import {GoogleSignin} from '@react-native-google-signin/google-signin';
+
+GoogleSignin.configure({
+  webClientId:
+    '1085354321951-223hnu64pncdknf0d27uprr2liksjdci.apps.googleusercontent.com',
+});
 
 const SignIn = ({navigation}) => {
   const [signInObj, setSignInObj] = useState({});
@@ -26,9 +32,9 @@ const SignIn = ({navigation}) => {
     auth()
       .signInWithEmailAndPassword(signInObj.Email, signInObj.Password)
       .then(() => {
-        setSignInObj({});
-        navigation.navigate('Tabs', {screen: 'Home'});
-        setLoading(false);
+        // setSignInObj({});
+        // navigation.navigate('Tabs', {screen: 'Home'});
+        // setLoading(false);
       })
       .catch(error => {
         if (error.code === 'auth/email-already-in-use') {
@@ -68,19 +74,24 @@ const SignIn = ({navigation}) => {
                 <View>
                   <View style={styles.inputContainer}>
                     <TextInput
-                      style={styles.mainInput}
+                      // style={}
                       placeholder="Email"
                       onChangeText={e => setSignInObj({...signInObj, Email: e})}
-                      style={[styles.bb1, styles.borderColor]}
+                      style={[styles.mainInput, styles.bb1, styles.borderColor]}
                     />
                     <TextInput
-                      style={styles.mainInput}
+                      // style={}
                       placeholder="Password"
                       onChangeText={e =>
                         setSignInObj({...signInObj, Password: e})
                       }
                       secureTextEntry={true}
-                      style={[styles.bb1, styles.borderColor, styles.mb10]}
+                      style={[
+                        styles.mainInput,
+                        styles.bb1,
+                        styles.borderColor,
+                        styles.mb10,
+                      ]}
                     />
                   </View>
                   <View style={styles.CheckContainer}>

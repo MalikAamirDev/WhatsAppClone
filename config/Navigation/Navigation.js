@@ -2,11 +2,11 @@ import React from 'react';
 import {NavigationContainer} from '@react-navigation/native';
 import StackNavigation from './StackNavigation';
 
-const Navigation = ({currentUser}) => {
+const Navigation = () => {
   return (
     <>
       <NavigationContainer>
-        <StackNavigation currentUser={currentUser} />
+        <StackNavigation />
       </NavigationContainer>
     </>
   );

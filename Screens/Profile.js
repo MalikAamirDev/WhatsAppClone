@@ -5,9 +5,11 @@ import styles from '../Styles/Styles';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Feather from 'react-native-vector-icons/Feather';
 import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
+import storage from '@react-native-firebase/storage';
+import {ActivityIndicator} from 'react-native-paper';
 
-const Profile = () => {
-  const [selectedImage, setSelectedImage] = useState(null);
+const Profile = ({Signup, setSelectedImage, selectedImage}) => {
+  const [isLoading, setIsLoading] = useState(false);
   const {
     theme: {colors},
   } = useContext(Context);
@@ -24,16 +26,52 @@ const Profile = () => {
     });
   };
   const openGallery = () => {
+    setIsLoading(true);
     let option = {
       includeBase64: true,
       mediaType: 'photo',
       SelectionLimit: 0,
     };
     launchImageLibrary(option, res => {
-      // const libraryImg = {uri: res.uri};
-      // const source = {uri: 'data:image/jpeg;base64,' + res.data};
-      // const source = {uri: res.uri};
-      setSelectedImage(res.assets[0].uri);
+      const uploadTask = storage()
+        .ref()
+        .child(`/userprofile/${Date.now()}`)
+        .putFile(res.assets[0].uri);
+      uploadTask.on(
+        'state_changed', // or 'state_changed'
+        snapshot => {
+          // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+          var progress =
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          // alert('Uploaded ');
+          if (progress === 100) {
+            alert('image uploaded');
+            // () => {
+            // Upload completed successfully, now we can get the download URL
+            uploadTask.snapshot.ref.getDownloadURL().then(downloadURL => {
+              console.log('File available at', downloadURL);
+              setSelectedImage(downloadURL);
+              // setIsLoading(false);
+            });
+            // }
+          }
+        },
+        error => {
+          // A full list of error codes is available at
+          // https://firebase.google.com/docs/storage/web/handle-errors
+          switch (error.code) {
+            case 'storage/unauthorized':
+              alert(`User doesn't have permission to access the object`);
+              break;
+            case 'storage/canceled':
+              alert('Canceled');
+              break;
+            case 'storage/unknown':
+              alert(`Unknown error occurred, inspect error.serverResponse`);
+              break;
+          }
+        },
+      );
     });
   };
 
@@ -56,12 +94,14 @@ const Profile = () => {
             styles.flexCenter,
             styles.mt30,
           ]}>
-          {!selectedImage ? (
+          {!isLoading ? (
             <MaterialCommunityIcons
               name="camera-plus"
               size={45}
               color={colors.iconGray}
             />
+          ) : !selectedImage ? (
+            <ActivityIndicator size={'large'} color={'#5EBC7B'} />
           ) : (
             <Image
               // source={require('../assets/profileImage/1.jpg')}
@@ -100,6 +140,7 @@ const Profile = () => {
       </View>
       <View style={[styles.flex2, {justifyContent: 'flex-end'}, styles.mb20]}>
         <TouchableOpacity
+          onPress={Signup}
           style={[styles.button, {backgroundColor: colors.secondary}]}>
           <Text style={[styles.btnText]}>Next</Text>
         </TouchableOpacity>

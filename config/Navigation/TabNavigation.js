@@ -5,17 +5,20 @@ import Home from '../../Screens/Home';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
-import Foundation from 'react-native-vector-icons/Foundation';
+// import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Calls from '../../Screens/Calls';
 import SingleChat from '../../Screens/SingleChat';
 import Groups from '../../Screens/Groups';
 import Status from '../../Screens/Status';
+import Camera from '../../Screens/Camera';
+import UserInfo from '../../Screens/UserInfo';
 
 const Tab = createBottomTabNavigator();
 
-const TabNavigation = () => {
+const TabNavigation = ({user}) => {
   return (
     <Tab.Navigator
+      initialRouteName="Home"
       screenOptions={{
         tabBarShowLabel: false,
         headerShown: false,
@@ -36,7 +39,7 @@ const TabNavigation = () => {
       }}>
       <Tab.Screen
         name="Camera"
-        component={Calls}
+        component={Camera}
         options={{
           tabBarIcon: ({focused}) => {
             return (
@@ -44,7 +47,7 @@ const TabNavigation = () => {
                 {focused ? (
                   <Ionicons name="camera" size={30} color={'#5EBC7B'} />
                 ) : (
-                  <Ionicons name="camera-outline" size={30} color={'grey'} />
+                  <Ionicons name="camera-outline" size={30} color={'#293040'} />
                 )}
               </>
             );
@@ -67,14 +70,15 @@ const TabNavigation = () => {
                   <Ionicons
                     name="ios-chatbubble-ellipses-outline"
                     size={28}
-                    color={'grey'}
+                    color={'#293040'}
                   />
                 )}
               </>
             );
           },
+          tabBarBadge: 2,
         }}>
-        {props => <Home {...props} />}
+        {props => <Home {...props} user={user} />}
       </Tab.Screen>
 
       <Tab.Screen
@@ -94,7 +98,7 @@ const TabNavigation = () => {
                   <MaterialCommunityIcons
                     name="account-group-outline"
                     size={31}
-                    color={'grey'}
+                    color={'#293040'}
                   />
                 )}
               </>
@@ -112,48 +116,55 @@ const TabNavigation = () => {
                 <MaterialCommunityIcons
                   name="shape-circle-plus"
                   size={25}
-                  color={focused ? '#5EBC7B' : 'grey'}
+                  color={focused ? '#5EBC7B' : '#293040'}
                 />
               </>
             );
           },
         }}
       />
-      <Tab.Screen
-        name="Calls"
-        component={Calls}
+      {/* <Tab.Screen
+        name=""
+        component={}
         options={{
           tabBarIcon: ({focused}) => {
             return (
               <>
                 {focused ? (
-                  <Foundation name="telephone" size={35} color={'#5EBC7B'} />
+                  
                 ) : (
-                  <SimpleLineIcons name="phone" size={25} color={'grey'} />
+                  
                 )}
               </>
             );
           },
         }}
-      />
-
-      {/* <Tab.Screen
-        name="Setting"
-        component={UserSetting}
+      /> */}
+      <Tab.Screen
+        name="UserInfo"
         options={{
           tabBarIcon: ({focused}) => {
             return (
               <>
-                <FontAwesome
-                  name="gear"
-                  size={30}
-                  color={focused ? '#ef3f49' : 'grey'}
-                />
+                {focused ? (
+                  <MaterialCommunityIcons
+                    name="account-circle"
+                    size={30}
+                    color={'#5EBC7B'}
+                  />
+                ) : (
+                  <MaterialCommunityIcons
+                    name="account-circle-outline"
+                    size={30}
+                    color={'#293040'}
+                  />
+                )}
               </>
             );
           },
-        }}
-      /> */}
+        }}>
+        {props => <UserInfo {...props} user={user} />}
+      </Tab.Screen>
     </Tab.Navigator>
   );
 };

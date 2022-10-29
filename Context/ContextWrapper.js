@@ -4,6 +4,7 @@ import {theme} from '../utils/utils';
 
 const ContextWrapper = props => {
   const [rooms, setRooms] = useState([]);
+
   return (
     <>
       <Context.Provider value={{theme}}>{props.children}</Context.Provider>

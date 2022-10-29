@@ -100,9 +100,9 @@ const styles = StyleSheet.create({
   },
   sendMessage: {
     backgroundColor: '#55a86f',
-    position: 'absolute',
-    right: 7,
-    bottom: 7,
+    // position: 'absolute',
+    // right: 0,
+    // bottom: 7,
     justifyContent: 'center',
     alignItems: 'center',
     width: 45,
@@ -147,17 +147,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   backIcon: {
-    backgroundColor: '#ef3f49',
+    backgroundColor: '#5EBC7B',
     width: 38,
     height: 38,
     borderRadius: 30,
     alignItems: 'center',
     justifyContent: 'center',
+    elevation: 5,
   },
   transparentIcon: {
     // backgroundColor: '#ef3f49',
     borderColor: '#fff',
-    borderWidth: 1,
+    // borderWidth: 1,
     width: 38,
     height: 38,
     borderRadius: 30,
@@ -197,6 +198,9 @@ const styles = StyleSheet.create({
   },
   bgWhite: {
     backgroundColor: 'white',
+  },
+  bgOffWhite: {
+    backgroundColor: '#f9f9f9',
   },
   coral: {
     backgroundColor: '#ff7f50',

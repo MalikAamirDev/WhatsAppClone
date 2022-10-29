@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -15,12 +15,99 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Feather from 'react-native-vector-icons/Feather';
+import {GiftedChat, Bubble, InputToolbar, Send} from 'react-native-gifted-chat';
+import firestore from '@react-native-firebase/firestore';
 
-const SingleChat = ({navigation}) => {
+const SingleChat = ({navigation, route, user}) => {
+  const {name, img, lastLogin, online, uid, status} = route.params;
   const [value, setValue] = useState('');
   const {width} = Dimensions.get('window');
+  // console.log(name);
+  const [messages, setMessages] = useState([]);
+
+  const getAllUsers = async () => {
+    const docid = uid > user.uid ? user.uid + '-' + uid : uid + '-' + user.uid;
+    const querySnap = await firestore()
+      .collection('chatrooms')
+      .doc(docid)
+      .collection('messages')
+      .orderBy('createdAt', 'desc')
+      .get();
+
+    const allMsg = querySnap.docs.map(docSnap => {
+      return {
+        ...docSnap.data(),
+        createdAt: docSnap.data().createdAt.toDate(),
+      };
+    });
+    setMessages(allMsg);
+  };
+
+  useEffect(() => {
+    // setMessages([
+    //   {
+    //     _id: 1,
+    //     text: 'Hello developer',
+    //     createdAt: new Date(),
+    //     user: {
+    //       _id: 2,
+    //       name: 'React Native',
+    //       avatar: 'https://placeimg.com/140/140/any',
+    //     },
+    //   },
+    // ]);
+    // getAllUsers();
+    const docid = uid > user.uid ? user.uid + '-' + uid : uid + '-' + user.uid;
+    const messageRef = firestore()
+      .collection('chatrooms')
+      .doc(docid)
+      .collection('messages')
+      .orderBy('createdAt', 'desc');
+
+    const unSubscriber = messageRef.onSnapshot(querySnap => {
+      const allMsg = querySnap.docs.map(docSnap => {
+        const data = docSnap.data();
+        if (data.createdAt) {
+          return {
+            ...docSnap.data(),
+            createdAt: docSnap.data().createdAt.toDate(),
+          };
+        } else {
+          return {
+            ...docSnap.data(),
+            createdAt: new Date(),
+          };
+        }
+      });
+      // let userAvatar = user.avatar;
+      setMessages(allMsg);
+    });
+    return () => {
+      unSubscriber();
+    };
+  }, []);
+
+  const onSend = messagesArray => {
+    const msg = messagesArray[0];
+    const myMsg = {
+      ...msg,
+      sendBy: user.uid,
+      sendTo: uid,
+      createdAt: new Date(),
+    };
+    setMessages(previousMessages => GiftedChat.append(previousMessages, myMsg));
+    const docid = uid > user.uid ? user.uid + '-' + uid : uid + '-' + user.uid;
+
+    firestore()
+      .collection('chatrooms')
+      .doc(docid)
+      .collection('messages')
+      .add({...myMsg, createdAt: firestore.FieldValue.serverTimestamp()});
+  };
+
   return (
     <View style={[styles.flex1, {backgroundColor: '#effaff'}]}>
+      {/* <Header> */}
       <View
         style={[
           {height: 60},
@@ -39,14 +126,14 @@ const SingleChat = ({navigation}) => {
             <TouchableOpacity>
               <Image
                 style={[styles.chatProfileImg, styles.mr10]}
-                source={require('../assets/profileImage/1.jpg')}
+                source={{uri: img}}
               />
             </TouchableOpacity>
             <View>
               <Text style={[styles.lightBlack, styles.fontWeightBold]}>
-                Malik Aamir
+                {name}
               </Text>
-              <Text style={[styles.fs12]}>Online</Text>
+              <Text style={[styles.fs12]}>{status}</Text>
             </View>
           </View>
           <View style={[styles.flexDirectionRow]}>
@@ -65,24 +152,18 @@ const SingleChat = ({navigation}) => {
           </View>
         </View>
       </View>
+      {/* </Header> */}
+      {/* <Container> */}
       <View
         style={[
           styles.Container,
           styles.elevation5,
           styles.p5,
           {backgroundColor: '#f9f9f9'},
-          // {backgroundColor: '#F2D0AD'},
         ]}>
-        {/* <ImageBackground
-          style={[styles.bgImage, styles.mt20]}
-          // source={{uri: '../assets/otherImages/wallpaper.png'}}
-          source={require('../assets/otherImages/wallpaper.png')}
-        /> */}
-        <View>
+        {/* <View>
           <View
             style={[
-              // styles.bgcoralLite,
-              // {backgroundColor: '#2ab355'},
               {backgroundColor: '#2ab355'},
               styles.flexCenter,
               styles.br10,
@@ -100,7 +181,7 @@ const SingleChat = ({navigation}) => {
             <View style={[styles.flexDirectionRow, styles.mt20]}>
               <Image
                 style={[styles.chatProfileImg, {alignSelf: 'flex-end'}]}
-                source={require('../assets/profileImage/1.jpg')}
+                source={img}
               />
               <View
                 style={[
@@ -121,7 +202,50 @@ const SingleChat = ({navigation}) => {
               </View>
             </View>
           </View>
-        </View>
+        </View> */}
+        <GiftedChat
+          messages={messages}
+          onSend={messages => onSend(messages)}
+          user={{
+            _id: user.uid,
+          }}
+          renderBubble={props => {
+            return (
+              <Bubble
+                {...props}
+                wrapperStyle={{
+                  right: {
+                    backgroundColor: '#5EBC7B',
+                  },
+                }}
+              />
+            );
+          }}
+          renderInputToolbar={props => {
+            return (
+              <InputToolbar
+                {...props}
+                containerStyle={[
+                  {borderRadius: 25, backgroundColor: '#effaff'},
+                  styles.elevation5,
+                ]}
+              />
+            );
+          }}
+          renderSend={props => {
+            return (
+              <Send {...props}>
+                <View style={[styles.sendMessage]}>
+                  <Ionicons size={24} name="md-send-sharp" color="white" />
+                </View>
+              </Send>
+            );
+          }}
+        />
+      </View>
+      {/* </Container> */}
+      {/* <Bottom> */}
+      {/* <View style={[styles.flex1, styles.bgOffWhite]}>
         <View style={[styles.chatInput, {width: width}]}>
           <View
             style={[
@@ -168,7 +292,8 @@ const SingleChat = ({navigation}) => {
             )}
           </TouchableOpacity>
         </View>
-      </View>
+      </View> */}
+      {/* </Bottom> */}
     </View>
   );
 };

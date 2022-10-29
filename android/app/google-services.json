@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "1085354321951",
+    "firebase_url": "https://jpwhatsappclone-default-rtdb.firebaseio.com",
     "project_id": "jpwhatsappclone",
     "storage_bucket": "jpwhatsappclone.appspot.com"
   },
@@ -13,6 +14,14 @@
         }
       },
       "oauth_client": [
+        {
+          "client_id": "1085354321951-lc06l5jgr4lgusi6bq6hs410i7gevvgb.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.whatsappclone",
+            "certificate_hash": "4a16d5cef66d7628cbe427c4c5d72f031701fbeb"
+          }
+        },
         {
           "client_id": "1085354321951-223hnu64pncdknf0d27uprr2liksjdci.apps.googleusercontent.com",
           "client_type": 3

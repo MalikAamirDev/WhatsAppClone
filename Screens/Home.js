@@ -1,130 +1,171 @@
-import React, {useContext} from 'react';
-import {View, Text, TouchableOpacity, Image, FlatList} from 'react-native';
+import React, {useContext, useEffect, useState} from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Image,
+  FlatList,
+  StatusBar,
+} from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
+import AntDesign from 'react-native-vector-icons/AntDesign';
 import styles from '../Styles/Styles';
 import auth from '@react-native-firebase/auth';
 import GlobalContext from '../Context/Context';
 import ContactsFloatingIcon from '../Components/ContactsFloatingIcon';
-// const authForDefaultApp = firebase.auth();
+import firestore from '@react-native-firebase/firestore';
+import moment from 'moment';
 
-const Home = ({navigation}) => {
-  const {currentUser} = auth();
-  // console.log(currentUser.isAnonymous);
+const Home = ({navigation, user}) => {
   const {rooms, setRooms} = useContext(GlobalContext);
-  // const { rooms, setRooms } = useContext(GlobalContext);
-  // const ChatsQuery =
+  const [users, setUsers] = useState(null);
+  // console.log(user);
+  const getUsers = async () => {
+    const querySnap = await firestore()
+      .collection('Users')
+      .where('uid', '!=', user.uid)
+      .get();
+    const allUsers = querySnap.docs.map(docSnap => docSnap.data());
+    setUsers(allUsers);
+  };
+  useEffect(() => {
+    getUsers();
+  }, []);
+  const signOut = () => {
+    let date = moment().utcOffset('+05: 00').format('hh:mm a - DD/MM/Y');
+    firestore()
+      .collection('Users')
+      .doc(user.uid)
+      .update({
+        status: date,
+      })
+      .then(() => {
+        auth().signOut();
+      });
+  };
   return (
-    <View style={[styles.mainContainer]}>
-      <View style={[styles.Header]}>
-        <View
-          style={[
-            styles.my20,
-            styles.mx10,
-            styles.flexDirectionRow,
-            styles.justifyContentSpaceBetween,
-          ]}>
-          <Text
-            style={[styles.fs24, styles.fontWeightBold, {color: '#5EBC7B'}]}>
-            WhatsApp
-          </Text>
-          <View style={[styles.flexDirectionRow]}>
-            <TouchableOpacity
-              style={[styles.mr10, styles.iconBg, styles.elevation5]}>
-              <Ionicons name="ios-moon-sharp" size={18} color="#293040" />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.mr10, styles.iconBg, styles.elevation5]}>
-              <Feather name="search" size={18} color="#293040" />
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.iconBg, styles.elevation5]}>
-              <SimpleLineIcons name="options" size={18} color="#293040" />
-            </TouchableOpacity>
-          </View>
-        </View>
-        <View>
-          <FlatList
-            horizontal={true}
-            // keyExtractor={item => item.id}
-            data={dummyData}
-            renderItem={({item, index}) => (
-              <TouchableOpacity key={index} style={[styles.ml10]}>
-                <Image style={[styles.statusImg]} source={item.image} />
-                <Text style={[styles.black, styles.ml10]}>{item.name}</Text>
-              </TouchableOpacity>
-            )}
-          />
-        </View>
-      </View>
-      <View style={[styles.Container, styles.elevation5]}>
-        <View
-          style={[
-            styles.p20,
-            // styles.py20,
-            // styles.px10,
-            styles.flexDirectionRow,
-            styles.justifyContentSpaceBetween,
-          ]}>
-          <View>
-            <Text style={[styles.fs30, styles.fontWeightBold, styles.black]}>
-              Messages
+    <>
+      <StatusBar barStyle="dark-content" backgroundColor="#effaff" />
+      <View style={[styles.mainContainer]}>
+        <View style={[styles.Header]}>
+          <View
+            style={[
+              styles.my20,
+              styles.mx10,
+              styles.flexDirectionRow,
+              styles.justifyContentSpaceBetween,
+            ]}>
+            <Text
+              style={[styles.fs24, styles.fontWeightBold, {color: '#5EBC7B'}]}>
+              WhatsApp
             </Text>
-            <Text>You have two new messages</Text>
-          </View>
-          <TouchableOpacity style={[styles.pt10]}>
-            <Feather name="archive" size={20} color="#293040" />
-          </TouchableOpacity>
-        </View>
-        <View>
-          <FlatList
-            // horizontal={true}
-            // keyExtractor={item => item.id}
-            data={dummyMessage}
-            renderItem={({item, index}) => (
+            <View style={[styles.flexDirectionRow]}>
               <TouchableOpacity
-                onPress={() => navigation.navigate('Chat')}
-                key={index}
-                style={styles.readMessages}>
-                {/* <View style={[styles.flexDirectionRow]}> */}
-                <Image
-                  style={[styles.profileImg, styles.mr10]}
-                  source={item.image}
-                />
-                <View
-                  style={[
-                    styles.flexGrow1,
-                    styles.justifyContentSpaceBetween,
-                    styles.flexDirectionRow,
-                  ]}>
-                  <View>
-                    <Text style={[styles.black, styles.fs20]}>{item.name}</Text>
-                    <Text style={item.newMessages && styles.lightBlack}>
-                      {item.message}
-                    </Text>
-                  </View>
-                  <View>
-                    <Text>{item.time}</Text>
-                    {item.newMessages && (
-                      <View style={styles.newMessages}>
-                        <Text style={[styles.fs10, styles.white]}>
-                          {item.messages}
-                        </Text>
-                      </View>
-                    )}
-                  </View>
-                </View>
-                {/* </View> */}
+                style={[styles.mr10, styles.iconBg, styles.elevation5]}>
+                <Ionicons name="ios-moon-sharp" size={18} color="#293040" />
               </TouchableOpacity>
-            )}
-          />
+              <TouchableOpacity
+                style={[styles.mr10, styles.iconBg, styles.elevation5]}>
+                <Feather name="search" size={18} color="#293040" />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={signOut}
+                style={[styles.iconBg, styles.elevation5]}>
+                <AntDesign name="logout" size={16} color="#293040" />
+              </TouchableOpacity>
+            </View>
+          </View>
+          <View>
+            <FlatList
+              horizontal={true}
+              // keyExtractor={item => item.id}
+              data={dummyData}
+              renderItem={({item, index}) => (
+                <TouchableOpacity key={index} style={[styles.ml10]}>
+                  <Image style={[styles.statusImg]} source={item.image} />
+                  <Text style={[styles.black, styles.ml10]}>{item.name}</Text>
+                </TouchableOpacity>
+              )}
+            />
+          </View>
         </View>
-        <ContactsFloatingIcon />
+        <View style={[styles.Container, styles.elevation5]}>
+          <View
+            style={[
+              styles.p20,
+              styles.flexDirectionRow,
+              styles.justifyContentSpaceBetween,
+            ]}>
+            <View>
+              <Text style={[styles.fs30, styles.fontWeightBold, styles.black]}>
+                Messages
+              </Text>
+              <Text>You have two new messages</Text>
+            </View>
+            <TouchableOpacity style={[styles.pt10]}>
+              <Feather name="archive" size={20} color="#293040" />
+            </TouchableOpacity>
+          </View>
+          <View>
+            <FlatList
+              keyExtractor={item => item.uid}
+              data={users}
+              renderItem={({item, index}) => (
+                <TouchableOpacity
+                  onPress={() =>
+                    navigation.navigate('Chat', {
+                      name: item.Name,
+                      img: item.img,
+                      uid: item.uid,
+                      status: item.status,
+                      // typeof item.status == 'string'
+                      //   ? item.status
+                      //   : item.status.toDate().toString(),
+                    })
+                  }
+                  style={styles.readMessages}>
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigation.navigate('UserDetails', {
+                        name: item.Name,
+                        email: item.Email,
+                        img: item.img,
+                        status: item.status,
+                      })
+                    }>
+                    <Image
+                      style={[styles.profileImg, styles.mr10]}
+                      source={{uri: item.img}}
+                    />
+                  </TouchableOpacity>
+                  <View
+                    style={[
+                      styles.flexGrow1,
+                      styles.justifyContentSpaceBetween,
+                      styles.flexDirectionRow,
+                    ]}>
+                    <View>
+                      <Text style={[styles.black, styles.fs20]}>
+                        {item.Name}
+                      </Text>
+                      <Text style={item.newMessages && styles.lightBlack}>
+                        {item.Email}
+                      </Text>
+                    </View>
+                    {/* <View>
+                      <Text>{item.status}</Text>
+                    </View> */}
+                  </View>
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+          <ContactsFloatingIcon />
+        </View>
       </View>
-      {/* <View style={[styles.p20, styles.bgcoralLite]}>
-        <Text>Bottom</Text>
-      </View> */}
-    </View>
+    </>
   );
 };
 
@@ -170,6 +211,8 @@ const dummyMessage = [
     message: 'Im great, how about you',
     time: '6:10 pm',
     unread: false,
+    online: true,
+    lastLogin: 'last seen today at 10:12 am',
   },
   {
     id: 2,
@@ -180,6 +223,8 @@ const dummyMessage = [
     unread: true,
     newMessages: true,
     messages: 9,
+    online: false,
+    lastLogin: 'last seen today at 11:20 am',
   },
   {
     id: 3,
@@ -190,6 +235,8 @@ const dummyMessage = [
     unread: true,
     newMessages: true,
     messages: 3,
+    online: false,
+    lastLogin: 'last seen today at 11:45 am',
   },
   {
     id: 4,
@@ -198,6 +245,8 @@ const dummyMessage = [
     message: 'Hey, buddy whats going on',
     time: '2:32 pm',
     unread: false,
+    online: true,
+    lastLogin: '10 am',
   },
   {
     id: 5,
@@ -206,6 +255,8 @@ const dummyMessage = [
     message: 'what are you doing?',
     time: '11:00 pm',
     unread: false,
+    online: false,
+    lastLogin: '2 pm',
   },
   {
     id: 6,
@@ -214,6 +265,8 @@ const dummyMessage = [
     message: 'is every thing alright',
     time: '12:00 pm',
     unread: false,
+    online: true,
+    lastLogin: '10 am',
   },
   {
     id: 7,
@@ -222,5 +275,7 @@ const dummyMessage = [
     message: 'is every thing alright',
     time: '11:30 pm',
     unread: false,
+    online: true,
+    lastLogin: '10 am',
   },
 ];
